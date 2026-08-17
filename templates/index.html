@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AI Study Notes Generator</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <h1>AI Study Notes Generator</h1>
+
+        <p>
+            Turn your study material into simple and easy-to-understand notes.
+        </p>
+
+    </header>
+
+
+
+    <!-- MAIN CONTAINER -->
+
+    <main class="container">
+
+
+        <!-- INPUT SECTION -->
+
+        <section class="input-card">
+
+
+            <label for="topic">
+                Study Topic
+            </label>
+
+
+            <input
+                type="text"
+                id="topic"
+                placeholder="Example: Computer Networks"
+            >
+
+
+
+            <label for="material">
+                Study Material
+            </label>
+
+
+            <textarea
+                id="material"
+                placeholder="Paste your study material here..."
+            ></textarea>
+
+
+
+            <!-- BUTTONS -->
+
+            <div class="button-group">
+
+                <button
+                    class="generate-btn"
+                    onclick="generateNotes()"
+                >
+                    Generate Notes
+                </button>
+
+
+                <button
+                    class="clear-btn"
+                    onclick="clearForm()"
+                >
+                    Clear
+                </button>
+
+            </div>
+
+
+        </section>
+
+
+
+        <!-- GENERATED NOTES TITLE -->
+
+        <h2 class="generated-title">
+            Generated Notes
+        </h2>
+
+
+
+        <!-- SIMPLE EXPLANATION -->
+
+        <section class="result-card">
+
+            <h2>
+                Simple Explanation
+            </h2>
+
+            <div
+                id="explanation"
+                class="result-content"
+            >
+                Your AI-generated explanation will appear here.
+            </div>
+
+        </section>
+
+
+
+        <!-- IMPORTANT POINTS -->
+
+        <section class="result-card">
+
+            <h2>
+                Important Points
+            </h2>
+
+            <div
+                id="important-points"
+                class="result-content"
+            >
+                Important points generation will be added next.
+            </div>
+
+        </section>
+
+
+
+        <!-- SHORT NOTES -->
+
+        <section class="result-card">
+
+            <h2>
+                Short Notes
+            </h2>
+
+            <div
+                id="short-notes"
+                class="result-content"
+            >
+                Short notes generation will be added next.
+            </div>
+
+        </section>
+
+
+
+        <!-- KEY TERMS -->
+
+        <section class="result-card">
+
+            <h2>
+                Key Terms & Definitions
+            </h2>
+
+            <div
+                id="key-terms"
+                class="result-content"
+            >
+                Key terms generation will be added next.
+            </div>
+
+        </section>
+
+
+
+        <!-- QUIZ -->
+
+        <section class="result-card">
+
+            <h2>
+                Quiz Questions
+            </h2>
+
+            <div
+                id="quiz"
+                class="result-content"
+            >
+                Quiz generation will be added next.
+            </div>
+
+        </section>
+
+
+
+        <!-- SUMMARY -->
+
+        <section class="result-card">
+
+            <h2>
+                Summary
+            </h2>
+
+            <div
+                id="summary"
+                class="result-content"
+            >
+                Your AI-generated summary will appear here.
+            </div>
+
+        </section>
+
+
+    </main>
+
+
+
+    <!-- JAVASCRIPT -->
+
+    <script>
+
+    async function generateNotes() {
+
+        const topic =
+            document.getElementById("topic").value.trim();
+
+        const material =
+            document.getElementById("material").value.trim();
+
+
+        // Check input
+        if (!topic || !material) {
+
+            alert("Please enter both topic and study material.");
+
+            return;
+        }
+
+
+        // Generate button
+        const button =
+            document.querySelector(".generate-btn");
+
+
+        button.innerText = "Generating...";
+
+        button.disabled = true;
+
+
+        // Loading messages
+        document.getElementById("explanation").innerText =
+            "AI is generating the explanation...";
+
+        document.getElementById("important-points").innerText =
+            "AI is generating important points...";
+
+        document.getElementById("short-notes").innerText =
+            "AI is generating short notes...";
+
+        document.getElementById("key-terms").innerText =
+            "AI is generating key terms...";
+
+        document.getElementById("quiz").innerText =
+            "AI is generating quiz questions...";
+
+        document.getElementById("summary").innerText =
+            "AI is generating the summary...";
+
+
+        try {
+
+            // Send request to Flask
+            const response = await fetch("/api/generate", {
+
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+
+                    topic: topic,
+
+                    material: material
+
+                })
+
+            });
+
+
+            // Convert response to JSON
+            const data = await response.json();
+
+
+            console.log("Flask Response:", data);
+
+
+            // Check response
+            if (!data.success) {
+
+                alert("Error: " + data.message);
+
+                return;
+            }
+
+
+            // ==================================================
+            // SIMPLE EXPLANATION
+            // ==================================================
+
+            document.getElementById("explanation").innerText =
+                data.simple_explanation;
+
+
+            // ==================================================
+            // IMPORTANT POINTS
+            // ==================================================
+
+            if (
+                Array.isArray(data.important_points) &&
+                data.important_points.length > 0
+            ) {
+
+                let pointsHTML = "";
+
+                data.important_points.forEach(function(point) {
+
+                    pointsHTML += "• " + point + "\n";
+
+                });
+
+                document.getElementById("important-points").innerText =
+                    pointsHTML;
+
+            } else {
+
+                document.getElementById("important-points").innerText =
+                    "No important points generated.";
+
+            }
+
+
+            // ==================================================
+            // SHORT NOTES
+            // ==================================================
+
+            document.getElementById("short-notes").innerText =
+                data.short_notes;
+
+
+            // ==================================================
+            // KEY TERMS & DEFINITIONS
+            // ==================================================
+
+            if (
+                Array.isArray(data.key_terms) &&
+                data.key_terms.length > 0
+            ) {
+
+                let termsHTML = "";
+
+                data.key_terms.forEach(function(item) {
+
+                    termsHTML +=
+                        item.term +
+                        " : " +
+                        item.definition +
+                        "\n\n";
+
+                });
+
+                document.getElementById("key-terms").innerText =
+                    termsHTML;
+
+            } else {
+
+                document.getElementById("key-terms").innerText =
+                    "No key terms generated.";
+
+            }
+
+
+            // ==================================================
+            // QUIZ QUESTIONS
+            // ==================================================
+
+            if (
+                Array.isArray(data.quiz) &&
+                data.quiz.length > 0
+            ) {
+
+                let quizHTML = "";
+
+                data.quiz.forEach(function(item, index) {
+
+                    quizHTML +=
+                        (index + 1) +
+                        ". " +
+                        item.question +
+                        "\nAnswer: " +
+                        item.answer +
+                        "\n\n";
+
+                });
+
+                document.getElementById("quiz").innerText =
+                    quizHTML;
+
+            } else {
+
+                document.getElementById("quiz").innerText =
+                    "No quiz questions generated.";
+
+            }
+
+
+            // ==================================================
+            // SUMMARY
+            // ==================================================
+
+            document.getElementById("summary").innerText =
+                data.summary;
+
+
+        }
+
+
+        catch (error) {
+
+            console.error("Frontend Error:", error);
+
+            alert(
+                "Something went wrong. Check the Flask terminal."
+            );
+
+            document.getElementById("explanation").innerText =
+                "Unable to connect to the AI service.";
+
+            document.getElementById("important-points").innerText =
+                "Unable to generate important points.";
+
+            document.getElementById("short-notes").innerText =
+                "Unable to generate short notes.";
+
+            document.getElementById("key-terms").innerText =
+                "Unable to generate key terms.";
+
+            document.getElementById("quiz").innerText =
+                "Unable to generate quiz.";
+
+            document.getElementById("summary").innerText =
+                "Unable to generate summary.";
+
+        }
+
+
+        finally {
+
+            button.innerText = "Generate Notes";
+
+            button.disabled = false;
+
+        }
+
+    }
+
+
+
+    // ======================================================
+    // CLEAR BUTTON
+    // ======================================================
+
+    function clearForm() {
+
+        document.getElementById("topic").value = "";
+
+        document.getElementById("material").value = "";
+
+
+        document.getElementById("explanation").innerText =
+            "Your AI-generated explanation will appear here.";
+
+
+        document.getElementById("important-points").innerText =
+            "Your important points will appear here.";
+
+
+        document.getElementById("short-notes").innerText =
+            "Your short notes will appear here.";
+
+
+        document.getElementById("key-terms").innerText =
+            "Your key terms will appear here.";
+
+
+        document.getElementById("quiz").innerText =
+            "Your quiz questions will appear here.";
+
+
+        document.getElementById("summary").innerText =
+            "Your AI-generated summary will appear here.";
+
+    }
+
+    </script>
+
+
+</body>
+
+</html>
